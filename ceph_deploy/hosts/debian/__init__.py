@@ -2,7 +2,8 @@ from . import mon  # noqa
 from .install import install, mirror_install, repo_install  # noqa
 from .uninstall import uninstall  # noqa
 from ceph_deploy.util import pkg_managers
-from ceph_deploy.util.system import is_systemd, is_upstart
+from ceph_deploy.util.system import is_docker, is_systemd, is_upstart
+
 
 # Allow to set some information about this distro
 #
@@ -21,6 +22,9 @@ def choose_init(module):
     # Upstart checks first because when installing ceph, the
     # `/lib/systemd/system/ceph.target` file may be created, fooling this
     # detection mechanism.
+    if is_docker(module.conn):
+        return 'sysvinit'
+
     if is_upstart(module.conn):
         return 'upstart'
 

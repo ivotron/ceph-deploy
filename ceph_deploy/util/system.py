@@ -16,6 +16,11 @@ def executable_path(conn, executable):
     return executable_path
 
 
+def is_docker(conn):
+    if os.path.exists("/.dockerenv"):
+        return True
+
+
 def is_systemd(conn):
     """
     Attempt to detect if a remote system is a systemd one or not
@@ -38,6 +43,9 @@ def is_upstart(conn):
     """
     # it may be possible that we may be systemd and the caller never checked
     # before so lets do that
+    if is_docker(conn):
+        return False
+
     if is_systemd(conn):
         return False
 
@@ -68,7 +76,9 @@ def enable_service(conn, service='ceph'):
 
     This function does not do any kind of detection.
     """
-    if is_systemd(conn):
+    if is_docker(conn):
+        return
+    elif is_systemd(conn):
         remoto.process.run(
             conn,
             [
